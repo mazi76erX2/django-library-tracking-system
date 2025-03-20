@@ -20,10 +20,18 @@ class AuthorViewSet(viewsets.ModelViewSet):
 
 
 class BookViewSet(viewsets.ModelViewSet):
-    # Optimize queryset with select_related to fetch author data in a single query
     queryset = Book.objects.select_related("author").all()
     serializer_class = BookSerializer
-    # Pagination will be applied automatically from REST_FRAMEWORK settings
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        # Example of manual filtering
+        genre = self.request.query_params.get("genre", None)
+        if genre is not None:
+            queryset = queryset.filter(genre=genre)
+
+        return queryset
 
     @action(detail=True, methods=["post"])
     def loan(self, request, pk=None):
